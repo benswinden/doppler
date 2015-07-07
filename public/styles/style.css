@@ -1,0 +1,26 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background: black;
+    height: 100%;
+}
+
+#feed {
+	min-height: 100%;
+    position:relative;
+}
+
+img {
+    max-height: 97%;
+    position:absolute;
+    top:0;
+    bottom:0;
+    left: 0;
+    right: 0;
+    margin:auto;
+
+    x-webkit-transition: opacity 2s ease-in-out;
+    x-moz-transition: opacity 2s ease-in-out;
+    x-o-transition: opacity 2s ease-in-out;
+    xtransition: opacity 2s ease-in-out;
+}
