@@ -18,6 +18,6 @@ var server = app.listen(6002, function () {
   var host = server.address().address;
   var port = server.address().port;
 
-  console.log('signil listening at http://%s:%s', host, port);
+  console.log('doppler listening at http://%s:%s', host, port);
 
 });
