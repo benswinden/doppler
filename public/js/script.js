@@ -32,28 +32,40 @@ google.load('feeds', '1');
 
 $(document).ready(function(){
 
+    // Loading gif ..
+    $('#img1').html( '<img src="/images/load.gif" />' );
+
     sessionStorage.playing = 1;
     currentDiv = $('#img1');
 
-    $(document).bind('keyup', 'space', function () {
-
-        if (sessionStorage.playing == 1) {
-            sessionStorage.playing = 0;
-        }
-        else {
-            sessionStorage.playing = 1;
-            initialize();
-        }
-    });
+    localStorage.removeItem('imgList');
 
     // sessionStorage.removeItem('imgList');
-    if (sessionStorage.imgList) {
-        imgList = sessionStorage.imgList.split(',');
-        initialize();
-    }
-    else {
+    if (!Cookies.get('dataValid') || !localStorage.getItem('imgList')) {
+
         getFeeds();
     }
+     else {
+
+        imgList = localStorage.imgList.split(',');
+        setTimeout( initialize, 4000 ); // Set a timeout just so I can see that sweet gif
+    }
+
+
+    // Key binds
+    $(document).keyup(function( event ) {
+
+        // Space
+        if ( event.which == 32 ) {            
+            if (sessionStorage.playing == 1) {
+                sessionStorage.playing = 0;
+            }
+            else {
+                sessionStorage.playing = 1;
+                initialize();
+            }
+        }
+    });
 });
 
 function getFeeds() {
@@ -90,7 +102,9 @@ function getFeeds() {
     else {
 
         // Save the new list to a cookie
-        sessionStorage.imgList = imgList;
+        localStorage.setItem('imgList', imgList );
+        Cookies.set('dataValid', 1, 1);     // Store a cookie so that we can set an expiration date after which we should reload data
+
         initialize();
     }
 
@@ -105,6 +119,7 @@ function initialize() {
 
         // Remove the chose item from the list
         imgList.splice(index, 1);
+        localStorage.setItem('imgList', imgList );
 
         if (currentDiv.selector == '#img1' ) {
 
