@@ -56,7 +56,7 @@ $(document).ready(function(){
     $(document).keyup(function( event ) {
 
         // Space
-        if ( event.which == 32 ) {            
+        if ( event.which == 32 ) {
             if (sessionStorage.playing == 1) {
                 sessionStorage.playing = 0;
             }
