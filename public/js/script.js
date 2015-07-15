@@ -5,30 +5,7 @@ var currentFeed = 0;
 var refreshTime = 6000;
 
 var imgList = [];
-var feedList = [
-    'https://www.pinterest.com/benswinden/ᏞᏆnᎬ.rss',
-    'https://www.pinterest.com/benswinden/ᎠᎡᎪᏇ.rss',
-    'https://www.pinterest.com/benswinden/ᏚᏜᎷᏴᏫᏝ.rss',
-    'https://www.pinterest.com/benswinden/ᎨℕᎢᎬᎡᎰᎪᏟᎬ.rss',
-    'https://www.pinterest.com/benswinden/ᏢᎻᎤᎢᎾ.rss',
-    'https://www.pinterest.com/benswinden/ᏚᏢᎪᏟᎬ.rss',
-    'https://www.pinterest.com/benswinden/ᏆᎷᎪᏩᎬ.rss',
-    'https://www.pinterest.com/benswinden/ᏨᏫᏞᎾᏬᏒ.rss',
-    'https://www.pinterest.com/benswinden/ᏀᎡᎪᏢᎻᎨᏟ.rss',
-    'https://www.pinterest.com/benswinden/ᎨᏞᏞᏌᏚᎢᎡᎪᎢᏋ.rss',
-    'https://www.pinterest.com/benswinden/ᏟᏝᎧᎱᎻᏋᏚ.rss',
-    'https://www.pinterest.com/benswinden/ᏀᏫᎾᎠᏕ.rss',
-    'https://www.pinterest.com/benswinden/ᎢᎪᎢᎱᎤᏫ.rss',
-    'https://www.pinterest.com/benswinden/ᎰᏝᏫᏒᎪ.rss',
-    'https://www.pinterest.com/benswinden/ᎨᏞᏞᏌᏚᎢᎡᎪᎢᏋ.rss',
-    'https://www.pinterest.com/benswinden/ᎷᏅᎢᎨᏫℕ.rss',
-    'https://www.pinterest.com/benswinden/ᏢᎡᏆᏁᎢ.rss',
-    'https://www.pinterest.com/benswinden/ᏖᎩᏢᎬ.rss',
-    'https://www.pinterest.com/benswinden/ᎾᏴᎫᎬᏨᎱ.rss',
-    'https://www.pinterest.com/benswinden/ᎻᏬᎷÅℕᏚ.rss'
-]
-
-google.load('feeds', '1');
+var tables = ['clothes', 'colour', 'draw', 'flora', 'goods', 'graphic', 'humans', 'illustrate', 'image', 'interface', 'line', 'motion', 'object', 'photo', 'print', 'space', 'symbol', 'tattoo', 'type'];
 
 $(document).ready(function(){
 
