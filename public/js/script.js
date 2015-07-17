@@ -3,8 +3,10 @@ var currentDiv;
 
 var currentFeed = 0;
 var refreshTime = 6000;
+var tableGetComplete = 0;       // Number of tables that have been succesfuly retrieved
 
 var imgList = [];
+var tables = ['clothes', 'colour', 'draw', 'flora', 'goods', 'graphic', 'humans', 'illustrate', 'image', 'interface', 'line', 'machines', 'motion', 'object', 'photo', 'print', 'space', 'symbol', 'tattoo', 'type'];
 
 google.load('feeds', '1');
 
@@ -16,19 +18,18 @@ $(document).ready(function(){
     sessionStorage.playing = 1;
     currentDiv = $('#img1');
 
-    localStorage.removeItem('imgList');
+    // localStorage.removeItem('imgList');
 
     // sessionStorage.removeItem('imgList');
     if (!Cookies.get('dataValid') || !localStorage.getItem('imgList')) {
 
-        getFeeds();
+        getTables();
     }
      else {
 
         imgList = localStorage.imgList.split(',');
-        setTimeout( initialize, 4000 ); // Set a timeout just so I can see that sweet gif
+        setTimeout( initialize, 3700 ); // Set a timeout just so I can see that sweet gif
     }
-
 
     // Key binds
     $(document).keyup(function( event ) {
@@ -45,6 +46,94 @@ $(document).ready(function(){
         }
     });
 });
+
+
+function initialize() {
+
+    if (sessionStorage.playing == 1) {
+
+        var index = Math.floor(Math.random() * imgList.length);
+        currentDiv.html( imgList[ index ]);
+
+        // Remove the chose item from the list
+        imgList.splice(index, 1);
+        localStorage.setItem('imgList', imgList );
+
+        if (currentDiv.selector == '#img1' ) {
+
+            $('#img1').children().children().css('opacity', 1);
+            $('#img2').children().children().css('opacity', 0);
+            currentDiv = $('#img2')
+        }
+        else {
+            $('#img1').children().children().css('opacity', 0);
+            $('#img2').children().children().css('opacity', 1);
+            currentDiv = $('#img1')
+        }
+
+        if (imgList.length == 0) {
+            getTables();
+        }
+        else {
+            console.log(imgList.length);
+            setTimeout( initialize, refreshTime );
+        }
+    }
+}
+
+function getTables() {
+
+    // Get each table data individually
+    for (var i = 0; i < tables.length; i++) {
+
+        getTable(tables[i]);
+    }
+
+    // Set a checker to tell when the tables have been gotten
+    setTimeout( checkTableGetComplete, 1000 );
+}
+
+// Gets an html img string for each entry in a specified table
+function getTable(table) {
+
+    $.post("/getTable", {table : table} , function(data){
+
+        // Callback
+        if( data != null) {
+
+            // Add all images received from server into the array that contains all images
+            for (var i = 0; i < data.length; i++) {
+
+                imgList.push(data[i]);
+            }
+
+            tableGetComplete++;
+        }
+    });
+}
+
+function checkTableGetComplete() {
+
+    if (tableGetComplete == tables.length) {
+
+        console.log("Starting..");
+
+        // Save the new list to a cookie
+        localStorage.setItem('imgList', imgList );
+        Cookies.set('dataValid', 1, 1);     // Store a cookie so that we can set an expiration date after which we should reload data
+
+        initialize();
+    }
+    else {
+
+        setTimeout( checkTableGetComplete, 1000 );
+    }
+}
+
+
+
+
+
 
 function getFeeds() {
     console.log("init: imglist length: " + imgList.length + "  currentFeed: " + currentFeed);
@@ -86,49 +175,4 @@ function getFeeds() {
         initialize();
     }
 
-}
-
-function initialize() {
-
-    if (sessionStorage.playing == 1) {
-
-        var index = Math.floor(Math.random() * imgList.length);
-        currentDiv.html( imgList[ index ]);
-
-        // Remove the chose item from the list
-        imgList.splice(index, 1);
-        localStorage.setItem('imgList', imgList );
-
-        if (currentDiv.selector == '#img1' ) {
-
-            $('#img1').children().children().css('opacity', 1);
-            $('#img2').children().children().css('opacity', 0);
-            currentDiv = $('#img2')
-        }
-        else {
-            $('#img1').children().children().css('opacity', 0);
-            $('#img2').children().children().css('opacity', 1);
-            currentDiv = $('#img1')
-        }
-
-        if (imgList.length == 0) {
-            getFeeds();
-        }
-        else {
-            console.log(imgList.length);
-            setTimeout( initialize, refreshTime );
-        }
-    }
-}
-
-function getTable(table) {
-
-    $.post("/getTable",{table : table}, function(data){
-
-        // Callback
-        if( data === 'complete') {
-
-            console.log("complete");
-        }
-    });
 }
