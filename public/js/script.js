@@ -5,7 +5,8 @@ var currentFeed = 0;
 var refreshTime = 6000;
 
 var imgList = [];
-var tables = ['clothes', 'colour', 'draw', 'flora', 'goods', 'graphic', 'humans', 'illustrate', 'image', 'interface', 'line', 'motion', 'object', 'photo', 'print', 'space', 'symbol', 'tattoo', 'type'];
+
+google.load('feeds', '1');
 
 $(document).ready(function(){
 
@@ -118,4 +119,16 @@ function initialize() {
             setTimeout( initialize, refreshTime );
         }
     }
+}
+
+function getTable(table) {
+
+    $.post("/getTable",{table : table}, function(data){
+
+        // Callback
+        if( data === 'complete') {
+
+            console.log("complete");
+        }
+    });
 }
