@@ -8,6 +8,30 @@ var tableGetComplete = 0;       // Number of tables that have been succesfuly re
 var imgList = [];
 var tables = ['clothes', 'colour', 'draw', 'flora', 'goods', 'graphic', 'humans', 'illustrate', 'image', 'interface', 'line', 'machines', 'motion', 'object', 'photo', 'print', 'space', 'symbol', 'tattoo', 'type'];
 
+var feeds = {
+    'clothes' : 'https://www.pinterest.com/benswinden/ᏟᏝᎧᎱᎻᏋᏚ.rss',
+    'colour' : 'https://www.pinterest.com/benswinden/ᏨᏫᏞᎾᏬᏒ.rss',
+    'draw' : 'https://www.pinterest.com/benswinden/ᎠᎡᎪᏇ.rss',
+    'flora' : 'https://www.pinterest.com/benswinden/ᎰᏝᏫᏒᎪ.rss',
+    'goods' : 'https://www.pinterest.com/benswinden/ᏀᏫᎾᎠᏕ.rss',
+    'graphic' : 'https://www.pinterest.com/benswinden/ᏀᎡᎪᏢᎻᎨᏟ.rss',
+    'humans' : 'https://www.pinterest.com/benswinden/ᎻᏬᎷÅℕᏚ.rss'
+    'illustrate' : 'https://www.pinterest.com/benswinden/ᎨᏞᏞᏌᏚᎢᎡᎪᎢᏋ.rss',
+    'image' : 'https://www.pinterest.com/benswinden/ᏆᎷᎪᏩᎬ.rss',
+    'interface' : 'https://www.pinterest.com/benswinden/ᎨℕᎢᎬᎡᎰᎪᏟᎬ.rss',
+    'line' : 'https://www.pinterest.com/benswinden/ᏞᏆnᎬ.rss',
+    'machines' : 'https://www.pinterest.com/benswinden/ᎷÅᏟᎻᎨℕᎬᏚ.rss',
+    'motion' : 'https://www.pinterest.com/benswinden/ᎷᏅᎢᎨᏫℕ.rss',
+    'object' : 'https://www.pinterest.com/benswinden/ᎾᏴᎫᎬᏨᎱ.rss',
+    'photo' : 'https://www.pinterest.com/benswinden/ᏢᎻᎤᎢᎾ.rss',
+    'print' : 'https://www.pinterest.com/benswinden/ᏢᎡᏆᏁᎢ.rss',
+    'space' : 'https://www.pinterest.com/benswinden/ᏚᏢᎪᏟᎬ.rss',
+    'symbol' : 'https://www.pinterest.com/benswinden/ᏚᏜᎷᏴᏫᏝ.rss',
+    'tattoo' : 'https://www.pinterest.com/benswinden/ᎢᎪᎢᎱᎤᏫ.rss',
+    'type' : 'https://www.pinterest.com/benswinden/ᏖᎩᏢᎬ.rss'
+}
+
+
 google.load('feeds', '1');
 
 $(document).ready(function(){
@@ -131,48 +155,39 @@ function checkTableGetComplete() {
 }
 
 
-
-
-
-
 function getFeeds() {
-    console.log("init: imglist length: " + imgList.length + "  currentFeed: " + currentFeed);
 
-    if (currentFeed < feedList.length) {
+    getFeed( feeds[ tables[0] ] );
+}
 
 
-        var feed = new google.feeds.Feed(feedList[currentFeed]); // update username
+function getFeed(feedURL) {
+    //console.log("init: imglist length: " + imgList.length + "  currentFeed: " + currentFeed);
 
-        feed.includeHistoricalEntries();
-        feed.setNumEntries(25); // set number of results to show
+    var feed = new google.feeds.Feed( feedURL ); // update username
 
-        feed.load(function(result) {
+    feed.includeHistoricalEntries();
+    feed.setNumEntries(25); // set number of results to show
 
-            if (!result.error) {
-                for (var i = 0; i < result.feed.entries.length; i++) { // loop through results
-                    var entry   = result.feed.entries[i],
-                    content = entry.content, // get "content" which includes img element
-                    regex   = /src="(.*?)"/, // look for img element in content
-                    src     = regex.exec(content)[1]; // pull the src out,
+    feed.load(function(result) {
 
-                    // put our link to the pin with img into our container:
-                    var img = '<a href="'+ entry.link + '" target="_blank"><img src="'+ 'https://s-media-cache-ak0.pinimg.com/7' + src.substring(38, src.length) + '" /></a>';
+        if (!result.error) {
+            for (var i = 0; i < result.feed.entries.length; i++) { // loop through results
+                var entry   = result.feed.entries[i],
+                content = entry.content, // get "content" which includes img element
+                regex   = /src="(.*?)"/, // look for img element in content
+                src     = regex.exec(content)[1]; // pull the src out,
 
-                    imgList.push(img);
-                }
+                // put our link to the pin with img into our container:
+                var img = '<a href="'+ entry.link + '" target="_blank"><img src="'+ 'https://s-media-cache-ak0.pinimg.com/7' + src.substring(38, src.length) + '" /></a>';
+
+                imgList.push(img);
             }
+        }
 
-            currentFeed++;
-            getFeeds();
-        });
-    }
-    else {
+        currentFeed++;
+        getFeeds();
+    });
 
-        // Save the new list to a cookie
-        localStorage.setItem('imgList', imgList );
-        Cookies.set('dataValid', 1, 1);     // Store a cookie so that we can set an expiration date after which we should reload data
-
-        initialize();
-    }
 
 }
