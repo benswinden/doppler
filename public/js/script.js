@@ -4,6 +4,7 @@ var currentDiv;
 var currentFeed = 0;
 var refreshTime = 6000;
 var tableGetComplete = 0;       // Number of tables that have been succesfuly retrieved
+var checkingFeeds = true;       // Whether or not the pinterest feeds should be checked for updated content
 
 var imgList = [];
 var tables = ['clothes', 'colour', 'draw', 'flora', 'goods', 'graphic', 'humans', 'illustrate', 'image', 'interface', 'line', 'machines', 'motion', 'object', 'photo', 'print', 'space', 'symbol', 'tattoo', 'type'];
@@ -15,7 +16,7 @@ var feeds = {
     'flora' : 'https://www.pinterest.com/benswinden/ᎰᏝᏫᏒᎪ.rss',
     'goods' : 'https://www.pinterest.com/benswinden/ᏀᏫᎾᎠᏕ.rss',
     'graphic' : 'https://www.pinterest.com/benswinden/ᏀᎡᎪᏢᎻᎨᏟ.rss',
-    'humans' : 'https://www.pinterest.com/benswinden/ᎻᏬᎷÅℕᏚ.rss'
+    'humans' : 'https://www.pinterest.com/benswinden/ᎻᏬᎷÅℕᏚ.rss',
     'illustrate' : 'https://www.pinterest.com/benswinden/ᎨᏞᏞᏌᏚᎢᎡᎪᎢᏋ.rss',
     'image' : 'https://www.pinterest.com/benswinden/ᏆᎷᎪᏩᎬ.rss',
     'interface' : 'https://www.pinterest.com/benswinden/ᎨℕᎢᎬᎡᎰᎪᏟᎬ.rss',
@@ -42,18 +43,22 @@ $(document).ready(function(){
     sessionStorage.playing = 1;
     currentDiv = $('#img1');
 
+    // Remove Data
     // localStorage.removeItem('imgList');
-
     // sessionStorage.removeItem('imgList');
-    if (!Cookies.get('dataValid') || !localStorage.getItem('imgList')) {
 
-        getTables();
-    }
-     else {
+    checkFeeds();
+    // test();
 
-        imgList = localStorage.imgList.split(',');
-        setTimeout( initialize, 3700 ); // Set a timeout just so I can see that sweet gif
-    }
+    // if (!Cookies.get('dataValid') || !localStorage.getItem('imgList')) {
+    //
+    //     getTables();
+    // }
+    //  else {
+    //
+    //     imgList = localStorage.imgList.split(',');
+    //     setTimeout( initialize, 3700 ); // Set a timeout just so I can see that sweet gif
+    // }
 
     // Key binds
     $(document).keyup(function( event ) {
@@ -146,7 +151,10 @@ function checkTableGetComplete() {
         localStorage.setItem('imgList', imgList );
         Cookies.set('dataValid', 1, 1);     // Store a cookie so that we can set an expiration date after which we should reload data
 
-        initialize();
+        if (checkingFeeds)
+            checkFeeds();
+        else
+            initialize();
     }
     else {
 
@@ -154,17 +162,22 @@ function checkTableGetComplete() {
     }
 }
 
+// Retrieve all the newest content from pinterest feeds
+function checkFeeds() {
 
-function getFeeds() {
-
-    getFeed( feeds[ tables[0] ] );
+    // Test
+    checkFeed( tables[1] );
 }
 
-
-function getFeed(feedURL) {
+// Retrieve content from a pinterest feed, check against data in table for new entries
+function checkFeed(table) {
     //console.log("init: imglist length: " + imgList.length + "  currentFeed: " + currentFeed);
 
+    var feedURL = feeds[ table ]
+
     var feed = new google.feeds.Feed( feedURL ); // update username
+
+    var list = [];
 
     feed.includeHistoricalEntries();
     feed.setNumEntries(25); // set number of results to show
@@ -172,22 +185,48 @@ function getFeed(feedURL) {
     feed.load(function(result) {
 
         if (!result.error) {
+
             for (var i = 0; i < result.feed.entries.length; i++) { // loop through results
                 var entry   = result.feed.entries[i],
                 content = entry.content, // get "content" which includes img element
                 regex   = /src="(.*?)"/, // look for img element in content
-                src     = regex.exec(content)[1]; // pull the src out,
 
-                // put our link to the pin with img into our container:
-                var img = '<a href="'+ entry.link + '" target="_blank"><img src="'+ 'https://s-media-cache-ak0.pinimg.com/7' + src.substring(38, src.length) + '" /></a>';
+                src = regex.exec(content)[1]; // pull the src out,
+                var image = 'https://s-media-cache-ak0.pinimg.com/7' + src.substring(38, src.length);
+                var lnk = entry.link.substring(25, entry.link.length);
 
-                imgList.push(img);
+                var obj = {img : image, link : lnk};
+
+                list.push(obj);
             }
+
+            var data = {table : table, list : list };
+
+            $.ajax({
+                url: "/checkFeed",
+                type: "POST",
+                dataType: "xml/html/script/json", // expected format for response
+                contentType: "application/json", // send as JSON
+                data: JSON.stringify( data ) ,
+            });
         }
+        else
+            console.log("Error from feed load");
 
-        currentFeed++;
-        getFeeds();
+        // currentFeed++;
+        // getFeeds();
     });
+}
 
+function test() {
 
+    var data = {text : 'testtext' };
+
+    $.ajax({
+        url: "/test",
+        type: "POST",
+        dataType: "xml/html/script/json", // expected format for response
+        contentType: "application/json", // send as JSON
+        data: JSON.stringify( data ) ,
+    });
 }

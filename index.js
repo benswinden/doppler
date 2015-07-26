@@ -9,7 +9,11 @@ app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
 app.use(express.static(__dirname + '/public'))
-app.use(bodyParser.urlencoded({ extended: false }));
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+app.use(bodyParser.json())
 
 app.get('/', function (req, res) {
 
@@ -60,9 +64,73 @@ app.post('/getTable',function(req,res){
     });
 });
 
+// Receives pinterest feed data from client function, checks against table data and enters entries that are new
+app.post('/checkFeed',function(req,res){
 
+    var table = req.body.table;
+    var dataList = req.body.list;       // An array of objects : { img , link }
 
+    var found = false;
 
+    var fs = require("fs");
+    var file = "data/data.db";
+    var exists = fs.existsSync(file);
+
+    if(!exists) {
+        console.log("Error : DB file is missing");
+    }
+
+    var db = new sqlite3.Database(file);
+
+    db.serialize(function() {
+
+        for (var i = 0; i < dataList.length; i++) {
+
+            db.each(' SELECT * FROM ' + table + ' WHERE link LIKE "%' + dataList[i].link + '%" ' ,
+                function item(err, row) {
+                    found = true;
+                },
+                function complete(err, found) {
+                    if (found) {
+                        console.log("entry found");
+                    }
+                    else
+                        console.log("entry not found");
+                }
+            );
+        }
+    });
+});
+
+app.post('/test',function(req,res){
+
+        var text = req.body.text;
+
+    var fs = require("fs");
+    var file = "data/data.db";
+    var exists = fs.existsSync(file);
+
+    if(!exists) {
+        console.log("Error : DB file is missing");
+    }
+
+    var db = new sqlite3.Database(file);
+
+    console.log("text:"+text);
+
+    db.serialize(function() {
+
+        db.each(' SELECT * FROM test WHERE field LIKE "%' + text  + '%" ' ,
+            function item(err, row) {
+                console.log("item");
+            },
+            function complete(err, found) {
+                console.log("complete");
+            }
+        );
+    });
+
+});
 
 
 
