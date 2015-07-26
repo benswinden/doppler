@@ -70,7 +70,7 @@ app.post('/checkFeed',function(req,res){
     var table = req.body.table;
     var dataList = req.body.list;       // An array of objects : { img , link }
 
-    var found = false;
+
 
     var fs = require("fs");
     var file = "data/data.db";
@@ -84,23 +84,36 @@ app.post('/checkFeed',function(req,res){
 
     db.serialize(function() {
 
-        for (var i = 0; i < dataList.length; i++) {
+        db.get("SELECT Count(*) as num FROM " + table, function(err, row) {
 
-            db.each(' SELECT * FROM ' + table + ' WHERE link LIKE "%' + dataList[i].link + '%" ' ,
-                function item(err, row) {
-                    found = true;
-                },
-                function complete(err, found) {
-                    if (found) {
-                        console.log("entry found");
-                    }
-                    else
-                        console.log("entry not found");
-                }
-            );
-        }
+             console.log(row.num);
+        });
+
+        var i = 0;
+        checkForEntry(db, table);
     });
 });
+
+function checkForEntry(db, table) {
+
+    db.each(' SELECT * FROM ' + table + ' WHERE link LIKE "%' + dataList[i].link + '%" ' ,
+        function item(err, row) {
+            found = true;
+        },
+        function complete(err, found) {
+
+            console.log(found + " " + temp);
+
+            if (i < dataList.length) {
+                i++;
+                checkForEntry();
+            }
+            else {
+                console.log("done");
+            }
+        }
+    );
+}
 
 app.post('/test',function(req,res){
 
@@ -131,7 +144,6 @@ app.post('/test',function(req,res){
     });
 
 });
-
 
 
 
