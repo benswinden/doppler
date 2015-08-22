@@ -65,59 +65,22 @@ app.post('/getTable',function(req,res){
 });
 
 // Receives pinterest feed data from client function, checks against table data and enters entries that are new
+var i = 0;
+var newEntriesFound = 0;
 app.post('/checkFeed',function(req,res){
 
     var table = req.body.table;
     var dataList = req.body.list;       // An array of objects : { img , link }
 
+    i = 0;
+    newEntriesFound = 0;
+    console.log("Check Table: " + table + " begin");
+    checkForEntry(table, dataList);
 
-
-    var fs = require("fs");
-    var file = "data/data.db";
-    var exists = fs.existsSync(file);
-
-    if(!exists) {
-        console.log("Error : DB file is missing");
-    }
-
-    var db = new sqlite3.Database(file);
-
-    db.serialize(function() {
-
-        db.get("SELECT Count(*) as num FROM " + table, function(err, row) {
-
-             console.log(row.num);
-        });
-
-        var i = 0;
-        checkForEntry(db, table);
-    });
+    res.send(undefined);
 });
 
-function checkForEntry(db, table) {
-
-    db.each(' SELECT * FROM ' + table + ' WHERE link LIKE "%' + dataList[i].link + '%" ' ,
-        function item(err, row) {
-            found = true;
-        },
-        function complete(err, found) {
-
-            console.log(found + " " + temp);
-
-            if (i < dataList.length) {
-                i++;
-                checkForEntry();
-            }
-            else {
-                console.log("done");
-            }
-        }
-    );
-}
-
-app.post('/test',function(req,res){
-
-        var text = req.body.text;
+function checkForEntry(table, dataList) {
 
     var fs = require("fs");
     var file = "data/data.db";
@@ -129,22 +92,37 @@ app.post('/test',function(req,res){
 
     var db = new sqlite3.Database(file);
 
-    console.log("text:"+text);
-
     db.serialize(function() {
 
-        db.each(' SELECT * FROM test WHERE field LIKE "%' + text  + '%" ' ,
+        db.each(' SELECT * FROM ' + table + ' WHERE link LIKE "%' + dataList[i].link + '%" ' ,
             function item(err, row) {
-                console.log("item");
+                found = true;
             },
             function complete(err, found) {
-                console.log("complete");
+
+                // Enter into db
+                if (found == 0) {
+
+                    newEntriesFound++;
+
+                    var link = "'" + dataList[i].link + "'";
+                    var img = "'" + dataList[i].img + "'";
+
+                    var stmt = "INSERT INTO " + table + " ('link','img') VALUES (" + link + "," + img +") ";
+                    db.run(stmt);
+                }
+
+                if (i < dataList.length - 1) {
+                    i++;
+                    checkForEntry(table, dataList);
+                }
+                else {
+                    console.log("Check Table: " + table + " complete. New entries found: " + newEntriesFound);
+                }
             }
         );
     });
-
-});
-
+}
 
 
 var server = app.listen(6002, function () {

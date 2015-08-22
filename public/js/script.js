@@ -4,10 +4,11 @@ var currentDiv;
 var currentFeed = 0;
 var refreshTime = 6000;
 var tableGetComplete = 0;       // Number of tables that have been succesfuly retrieved
-var checkingFeeds = true;       // Whether or not the pinterest feeds should be checked for updated content
 
 var imgList = [];
 var tables = ['clothes', 'colour', 'draw', 'flora', 'goods', 'graphic', 'humans', 'illustrate', 'image', 'interface', 'line', 'machines', 'motion', 'object', 'photo', 'print', 'space', 'symbol', 'tattoo', 'type'];
+
+var currentTimeout;
 
 var feeds = {
     'clothes' : 'https://www.pinterest.com/benswinden/ᏟᏝᎧᎱᎻᏋᏚ.rss',
@@ -16,13 +17,13 @@ var feeds = {
     'flora' : 'https://www.pinterest.com/benswinden/ᎰᏝᏫᏒᎪ.rss',
     'goods' : 'https://www.pinterest.com/benswinden/ᏀᏫᎾᎠᏕ.rss',
     'graphic' : 'https://www.pinterest.com/benswinden/ᏀᎡᎪᏢᎻᎨᏟ.rss',
-    'humans' : 'https://www.pinterest.com/benswinden/ᎻᏬᎷÅℕᏚ.rss',
+    'humans' : 'https://www.pinterest.com/benswinden/ᎻᏬᎷÅNᏚ.rss',
     'illustrate' : 'https://www.pinterest.com/benswinden/ᎨᏞᏞᏌᏚᎢᎡᎪᎢᏋ.rss',
     'image' : 'https://www.pinterest.com/benswinden/ᏆᎷᎪᏩᎬ.rss',
-    'interface' : 'https://www.pinterest.com/benswinden/ᎨℕᎢᎬᎡᎰᎪᏟᎬ.rss',
+    'interface' : 'https://www.pinterest.com/benswinden/ᎨNᎢᎬᎡᎰᎪᏟᎬ.rss',
     'line' : 'https://www.pinterest.com/benswinden/ᏞᏆnᎬ.rss',
-    'machines' : 'https://www.pinterest.com/benswinden/ᎷÅᏟᎻᎨℕᎬᏚ.rss',
-    'motion' : 'https://www.pinterest.com/benswinden/ᎷᏅᎢᎨᏫℕ.rss',
+    'machines' : 'https://www.pinterest.com/benswinden/ᎷÅᏟᎻᎨNᎬᏚ.rss',
+    'motion' : 'https://www.pinterest.com/benswinden/ᎷᏅᎢᎨᏫN.rss',
     'object' : 'https://www.pinterest.com/benswinden/ᎾᏴᎫᎬᏨᎱ.rss',
     'photo' : 'https://www.pinterest.com/benswinden/ᏢᎻᎤᎢᎾ.rss',
     'print' : 'https://www.pinterest.com/benswinden/ᏢᎡᏆᏁᎢ.rss',
@@ -44,21 +45,17 @@ $(document).ready(function(){
     currentDiv = $('#img1');
 
     // Remove Data
-    // localStorage.removeItem('imgList');
-    // sessionStorage.removeItem('imgList');
+    //localStorage.removeItem('imgList');     // Removes the stored list of images everytime, which means it will check for new content, and reload content from db everytime. Comment out for proper run
 
-    checkFeeds();
-    // test();
+    if (!Cookies.get('dataValid') || !localStorage.getItem('imgList')) {
 
-    // if (!Cookies.get('dataValid') || !localStorage.getItem('imgList')) {
-    //
-    //     getTables();
-    // }
-    //  else {
-    //
-    //     imgList = localStorage.imgList.split(',');
-    //     setTimeout( initialize, 3700 ); // Set a timeout just so I can see that sweet gif
-    // }
+        checkFeeds();
+    }
+     else {
+
+        imgList = localStorage.imgList.split(',');
+        setTimeout( initialize, 1000 ); // Set a timeout just so I can see that sweet gif
+    }
 
     // Key binds
     $(document).keyup(function( event ) {
@@ -66,16 +63,18 @@ $(document).ready(function(){
         // Space
         if ( event.which == 32 ) {
             if (sessionStorage.playing == 1) {
+                console.log("Pause");
                 sessionStorage.playing = 0;
+                clearTimeout(currentTimeout);
             }
             else {
+                console.log("Unpause");
                 sessionStorage.playing = 1;
-                initialize();
+                currentTimeout = setTimeout( initialize, 700 );
             }
         }
     });
 });
-
 
 function initialize() {
 
@@ -105,11 +104,12 @@ function initialize() {
         }
         else {
             console.log(imgList.length);
-            setTimeout( initialize, refreshTime );
+            currentTimeout = setTimeout( initialize, refreshTime );
         }
     }
 }
 
+// Gets all table data from the database
 function getTables() {
 
     // Get each table data individually
@@ -141,6 +141,7 @@ function getTable(table) {
     });
 }
 
+// Check for completion
 function checkTableGetComplete() {
 
     if (tableGetComplete == tables.length) {
@@ -149,12 +150,9 @@ function checkTableGetComplete() {
 
         // Save the new list to a cookie
         localStorage.setItem('imgList', imgList );
-        Cookies.set('dataValid', 1, 1);     // Store a cookie so that we can set an expiration date after which we should reload data
+        Cookies.set('dataValid', 1, 1);                       // Store a cookie so that we can set an expiration date after which we should reload data
 
-        if (checkingFeeds)
-            checkFeeds();
-        else
-            initialize();
+        initialize();
     }
     else {
 
@@ -165,8 +163,12 @@ function checkTableGetComplete() {
 // Retrieve all the newest content from pinterest feeds
 function checkFeeds() {
 
-    // Test
-    checkFeed( tables[1] );
+    if (currentFeed < tables.length) {
+        checkFeed( tables[currentFeed] );
+    }
+    else {
+        getTables();
+    }
 }
 
 // Retrieve content from a pinterest feed, check against data in table for new entries
@@ -210,23 +212,12 @@ function checkFeed(table) {
                 data: JSON.stringify( data ) ,
             });
         }
-        else
-            console.log("Error from feed load");
+        else {
+            console.log("Error from feed load " + result.error.message);
 
-        // currentFeed++;
-        // getFeeds();
-    });
-}
+        }
 
-function test() {
-
-    var data = {text : 'testtext' };
-
-    $.ajax({
-        url: "/test",
-        type: "POST",
-        dataType: "xml/html/script/json", // expected format for response
-        contentType: "application/json", // send as JSON
-        data: JSON.stringify( data ) ,
+        currentFeed++;
+        checkFeeds();
     });
 }
