@@ -52,7 +52,7 @@ app.post('/getTable',function(req,res){
 
             index++;
 
-            data.push ( '<a href="https://www.pinterest.com'+ row.link + '" target="_blank"><img src="'+ row.img + '" />asdasdasd</a>' );
+            data.push ( '<a href="https://www.pinterest.com'+ row.link + '" target="_blank"><img src="'+ row.img + '" /></a>' );
 
             // Wait until all entries have been read before proceding
             if (index >= entryNum) {
