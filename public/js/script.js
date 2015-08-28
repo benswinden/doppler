@@ -54,7 +54,7 @@ $(document).ready(function(){
      else {
 
         imgList = localStorage.imgList.split(',');
-        setTimeout( initialize, 1000 ); // Set a timeout just so I can see that sweet gif
+        setTimeout( initialize, 3700 ); // Set a timeout just so I can see that sweet gif
     }
 
     // Key binds
